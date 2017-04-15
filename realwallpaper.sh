@@ -26,6 +26,11 @@ if [ -z "${out_file+x}" ];then
   exit 23
 fi
 
+if [ -z "${marker_url+x}" ];then
+  echo "please set marker_url"
+  exit 23
+fi
+
 # usage: getimg FILENAME URL
 fetch() {
   echo "fetch $1"
@@ -95,7 +100,9 @@ main() {
   fetch clouds-raw.jpg \
     $cloudmap_url &
   fetch krebs.sat.tle \
-     http://www.celestrak.com/NORAD/elements/stations.txt &
+    http://www.celestrak.com/NORAD/elements/stations.txt &
+  fetch marker.json \
+    $marker_url &
   wait
 
   check_type nightmap-raw.jpg image
@@ -150,6 +157,9 @@ main() {
     nightmap.png
     # nightmap-old.png
 
+  # create marker file from json
+  jq -r 'to_entries[] | @json "\(.value.latitude) \(.value.longitude)"' marker.json > marker_file
+
   # make all unmodified files as final
   for normal in \
       daymap.png \
@@ -190,6 +200,18 @@ satellite_file=$satellite_file
 shade=15
 EOF
 
+  cat >xplanet-sat-krebs.config <<EOF
+[earth]
+"Earth"
+map=$map
+night_map=$night_map
+cloud_map=$cloud_map
+cloud_threshold=10
+satellite_file=$satellite_file
+marker_file=marker_file
+shade=15
+EOF
+
   cat >krebs.sat <<EOF
 25544 "ISS" Image=none trail={orbit,-2,2,1} color=grey thickness=1 fontsize=10
 37820 "T1" Image=none trail={orbit,-2,2,1} color=grey thickness=1 fontsize=10
@@ -205,6 +227,10 @@ EOF
     --output xplanet-sat-output.png --projection merc \
     -config xplanet-sat.config
 
+  xplanet --num_times 1 --geometry $xplanet_out_size \
+    --output xplanet-sat-krebs-output.png --projection merc \
+    -config xplanet-sat-krebs.config
+
   # trim xplanet output
   if needs_rebuild realwallpaper.png xplanet-output.png; then
     convert xplanet-output.png -crop $out_geometry \
@@ -215,6 +241,11 @@ EOF
   if needs_rebuild realwallpaper-sat.png xplanet-sat-output.png; then
     convert xplanet-sat-output.png -crop $out_geometry \
       realwallpaper-sat.png
+  fi
+
+  if needs_rebuild realwallpaper-sat-krebs.png xplanet-sat-krebs-output.png; then
+    convert xplanet-sat-krebs-output.png -crop $out_geometry \
+      realwallpaper-sat-krebs.png
   fi
 
   cp realwallpaper.png $out_file
