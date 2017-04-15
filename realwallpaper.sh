@@ -29,7 +29,7 @@ fi
 # usage: getimg FILENAME URL
 fetch() {
   echo "fetch $1"
-  curl -sS -z "$1" -o "$1" "$2"
+  curl -LsS -z "$1" -o "$1" "$2"
 }
 
 # usage: check_type FILENAME TYPE
