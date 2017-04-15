@@ -21,11 +21,6 @@ if [ -z "${cloudmap_url+x}" ];then
   exit 23
 fi
 
-if [ -z "${out_file+x}" ];then
-  echo "please set out_file"
-  exit 23
-fi
-
 if [ -z "${marker_url+x}" ];then
   echo "please set marker_url"
   exit 23
@@ -247,9 +242,6 @@ EOF
     convert xplanet-sat-krebs-output.png -crop $out_geometry \
       realwallpaper-sat-krebs.png
   fi
-
-  cp realwallpaper.png $out_file
-  chmod 644 $out_file
 
 }
 
