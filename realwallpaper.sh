@@ -153,7 +153,9 @@ main() {
     # nightmap-old.png
 
   # create marker file from json
-  jq -r 'to_entries[] | @json "\(.value.latitude) \(.value.longitude)"' marker.json > marker_file
+  if [ -s marker.json ]; then
+    jq -r 'to_entries[] | @json "\(.value.latitude) \(.value.longitude)"' marker.json > marker_file
+  fi
 
   # make all unmodified files as final
   for normal in \
