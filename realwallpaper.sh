@@ -94,8 +94,6 @@ main() {
     $daymap_url &
   fetch clouds-raw.jpg \
     $cloudmap_url &
-  fetch krebs.sat.tle \
-    http://www.celestrak.com/NORAD/elements/stations.txt &
   fetch marker.json \
     $marker_url &
   wait
@@ -172,7 +170,6 @@ main() {
   night_map=nightmap-final.png
   cloud_map=clouds-final.png
   gcloud_map=gcloud-cloudmask.png
-  satellite_file=krebs.sat
 
   # create xplanet output
   cat >xplanet.config <<EOF
@@ -185,33 +182,15 @@ cloud_threshold=10
 shade=15
 EOF
 
-  # create xplanet output satellite version
-  cat >xplanet-sat.config <<EOF
+  cat >xplanet-krebs.config <<EOF
 [earth]
 "Earth"
 map=$map
 night_map=$night_map
 cloud_map=$cloud_map
 cloud_threshold=10
-satellite_file=$satellite_file
-shade=15
-EOF
-
-  cat >xplanet-sat-krebs.config <<EOF
-[earth]
-"Earth"
-map=$map
-night_map=$night_map
-cloud_map=$cloud_map
-cloud_threshold=10
-satellite_file=$satellite_file
 marker_file=marker_file
 shade=15
-EOF
-
-  cat >krebs.sat <<EOF
-25544 "ISS" Image=none trail={orbit,-2,2,1} color=grey thickness=1 fontsize=10
-37820 "T1" Image=none trail={orbit,-2,2,1} color=grey thickness=1 fontsize=10
 EOF
 
   # rebuild every time to update shadow
@@ -219,14 +198,9 @@ EOF
     --output xplanet-output.png --projection merc \
     -config xplanet.config
 
-  # rebuild everytime satellite version
   xplanet --num_times 1 --geometry $xplanet_out_size \
-    --output xplanet-sat-output.png --projection merc \
-    -config xplanet-sat.config
-
-  xplanet --num_times 1 --geometry $xplanet_out_size \
-    --output xplanet-sat-krebs-output.png --projection merc \
-    -config xplanet-sat-krebs.config
+    --output xplanet-krebs-output.png --projection merc \
+    -config xplanet-krebs.config
 
   # trim xplanet output
   if needs_rebuild realwallpaper.png xplanet-output.png; then
@@ -234,15 +208,9 @@ EOF
       realwallpaper.png
   fi
 
-  # trim xplanet-sat output
-  if needs_rebuild realwallpaper-sat.png xplanet-sat-output.png; then
-    convert xplanet-sat-output.png -crop $out_geometry \
-      realwallpaper-sat.png
-  fi
-
-  if needs_rebuild realwallpaper-sat-krebs.png xplanet-sat-krebs-output.png; then
-    convert xplanet-sat-krebs-output.png -crop $out_geometry \
-      realwallpaper-sat-krebs.png
+  if needs_rebuild realwallpaper-krebs.png xplanet-krebs-output.png; then
+    convert xplanet-krebs-output.png -crop $out_geometry \
+      realwallpaper-krebs.png
   fi
 
 }
